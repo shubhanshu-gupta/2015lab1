@@ -34,9 +34,9 @@ clf = LinearRegression()
 clf = clf.fit(X, Y)
 
 
-# In[ ]:
+# In[38]:
 
-
+' + '.join([format(clf.intercept_, '0.4f')] + map(lambda (f): "(%0.4f)" % (f), zip(clf.coef_)))
 
 
 # In[28]:
