@@ -232,6 +232,115 @@ test_stationarity(ts_log_decompose)
 #Test statistic is even lower than 1% of the critical value. Hence, it's probably stationary now.
 
 
+# In[37]:
+
+## Final Forecasting
+
+
+# In[38]:
+
+from statsmodels.tsa.arima_model import ARIMA
+
+
+# In[39]:
+
+#ACF and PACF plots:
+from statsmodels.tsa.stattools import acf, pacf
+
+
+# In[40]:
+
+lag_acf = acf(ts_log_diff, nlags=20)
+
+
+# In[41]:
+
+lag_acf
+
+
+# In[42]:
+
+lag_pacf = pacf(ts_log_diff, nlags=20, method='ols')
+
+
+# In[43]:
+
+lag_pacf
+
+
+# In[44]:
+
+#Plot ACF:    
+plt.subplot(121)    
+plt.plot(lag_acf)
+plt.axhline(y=0,linestyle='--',color='gray')
+plt.axhline(y=-1.96/np.sqrt(len(ts_log_diff)),linestyle='--',color='gray')
+plt.axhline(y=1.96/np.sqrt(len(ts_log_diff)),linestyle='--',color='gray')
+plt.title('Autocorrelation Function')
+
+
+# In[45]:
+
+#Plot PACF:
+plt.subplot(122)
+plt.plot(lag_pacf)
+plt.axhline(y=0,linestyle='--',color='gray')
+plt.axhline(y=-1.96/np.sqrt(len(ts_log_diff)),linestyle='--',color='gray')
+plt.axhline(y=1.96/np.sqrt(len(ts_log_diff)),linestyle='--',color='gray')
+plt.title('Partial Autocorrelation Function')
+plt.tight_layout()
+
+
+# In[46]:
+
+from statsmodels.tsa.arima_model import ARIMA
+
+
+# In[47]:
+
+model = ARIMA(ts_log, order=(2, 1, 0))  
+results_AR = model.fit(disp=-1)  
+plt.plot(ts_log_diff)
+plt.plot(results_AR.fittedvalues, color='red')
+plt.title('RSS: %.4f'% sum((results_AR.fittedvalues-ts_log_diff)**2))
+
+
+# In[48]:
+
+model = ARIMA(ts_log, order=(2, 1, 2))  
+results_ARIMA = model.fit(disp=-1)  
+plt.plot(ts_log_diff)
+plt.plot(results_ARIMA.fittedvalues, color='red')
+plt.title('RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))
+
+
+# In[49]:
+
+predictions_ARIMA_diff = pd.Series(results_ARIMA.fittedvalues, copy=True)
+print predictions_ARIMA_diff.head()
+
+
+# In[50]:
+
+predictions_ARIMA_diff_cumsum = predictions_ARIMA_diff.cumsum()
+print predictions_ARIMA_diff_cumsum.head()
+
+
+# In[51]:
+
+predictions_ARIMA_log = pd.Series(ts_log.ix[0], index=ts_log.index)
+predictions_ARIMA_log = predictions_ARIMA_log.add(predictions_ARIMA_diff_cumsum,fill_value=0)
+predictions_ARIMA_log.head()
+
+
+# In[52]:
+
+predictions_ARIMA = np.exp(predictions_ARIMA_log)
+plt.plot(ts)
+plt.plot(predictions_ARIMA)
+plt.title('RMSE: %.4f'% np.sqrt(sum((predictions_ARIMA-ts)**2)/len(ts)))
+
+
 # In[ ]:
 
 
